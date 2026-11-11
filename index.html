@@ -76,11 +76,11 @@
                     <!-- Header Totals -->
                     <div class="flex items-center gap-2">
                         <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                            <span class="text-[10px] text-indigo-200 block">ယနေ့ စုစုပေါင်း</span>
+                            <span class="text-[10px] text-indigo-200 block">ယနေ့သုံးငွေ</span>
                             <span id="headerTodaySpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
                         </div>
                         <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                            <span id="headerMonthLabel" class="text-[10px] text-indigo-200 block">နိုဝင်ဘာ စုစုပေါင်း</span>
+                            <span id="headerMonthLabel" class="text-[10px] text-indigo-200 block">နိုဝင်ဘာလသုံးငွေ</span>
                             <span id="headerMonthSpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
                         </div>
                     </div>
@@ -389,7 +389,7 @@
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('currentUserDisplay').textContent = currentUser.fullName;
             setDefaultDate();
-            fetchExpensesData(); // ဝင်ရောက်ပြီးချိန်တွင် ဒေတာကို တစ်ကြိမ်တည်း ဆွဲယူမည် (Connection အမြဲမပွင့်စေရန်)
+            fetchExpensesData(); 
         }
 
         function setDefaultDate() {
@@ -397,7 +397,6 @@
             document.getElementById('expDate').value = today;
         }
 
-        // အမြဲချိတ်ဆက်နေသော onValue အစား လိုအပ်မှသာ တစ်ကြိမ်ချင်း ဝင်ဖတ်သော get() ကို အသုံးပြုထားပါသည်
         function fetchExpensesData() {
             get(expensesRef).then((snapshot) => {
                 const data = snapshot.val();
@@ -487,7 +486,7 @@
                             await set(itemRef, { date, category, amount, note, userName: createdBy });
                             showToast("အသုံးစရိတ် မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ", "success");
                             resetForm();
-                            fetchExpensesData(); // ပြင်ဆင်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
+                            fetchExpensesData(); 
                         } catch (error) {
                             showToast("ပြင်ဆင်ခြင်း မအောင်မြင်ပါ", "error");
                         }
@@ -499,7 +498,7 @@
                     await push(expensesRef, newExpense);
                     showToast("အသုံးစရိတ် အသစ် ထည့်သွင်းပြီးပါပြီ", "success");
                     resetForm();
-                    fetchExpensesData(); // အသစ်ထည့်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
+                    fetchExpensesData(); 
                 } catch (error) {
                     showToast("ထည့်သွင်းခြင်း မအောင်မြင်ပါ", "error");
                 }
@@ -512,7 +511,7 @@
             document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-circle-plus"></i> စရိတ်အသစ် ထည့်သွင်းရန်';
             document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> စာရင်းသိမ်းဆည်းမည်';
             document.getElementById('cancelEditBtn').classList.add('hidden');
-            setDefaultDate();
+            setDefaultDate(); // Reset လုပ်လျှင်လည်း ယနေ့ရက်စွဲကို အလိုအလျောက် ပြန်ထည့်ပေးမည်
         }
 
         function editExpense(firebaseKey) {
@@ -543,7 +542,7 @@
                         const itemRef = ref(db, `expenses/${firebaseKey}`);
                         await remove(itemRef);
                         showToast("အသုံးစရိတ် မှတ်တမ်း ဖျက်ပြီးပါပြီ", "success");
-                        fetchExpensesData(); // ဖျက်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
+                        fetchExpensesData(); 
                     } catch (error) {
                         showToast("ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
                     }
@@ -571,7 +570,7 @@
                         await update(ref(db), updates);
                         document.getElementById('selectAllCheckbox').checked = false;
                         showToast(`ရွေးချယ်ထားသော စာရင်း (${count}) ခု ဖျက်ပြီးပါပြီ`, "success");
-                        fetchExpensesData(); // အစုလိုက်ဖျက်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
+                        fetchExpensesData(); 
                     } catch (error) {
                         showToast("အစုလိုက် ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
                     }
@@ -635,11 +634,13 @@
             let targetYear = selectedYear || currentYearStr;
 
             const monthNames = {
-                '01': 'ဇန်နဝါရီ', '02': 'ဖေဖော်ဝါရီ', '03': 'မတ်', '04': 'ဧပြီ',
-                '05': 'မေ', '06': 'ဇွန်', '07': 'ဇူလိုင်', '08': 'ဩဂုတ်',
-                '09': 'စက်တင်ဘာ', '10': 'အောက်တိုဘာ', '11': 'နိုဝင်ဘာ', '12': 'ဒီဇင်ဘာ'
+                '01': 'ဇန်နဝါရီလ', '02': 'ဖေဖော်ဝါရီလ', '03': 'မတ်လ', '04': 'ဧပြီလ',
+                '05': 'မေလ', '06': 'ဇွန်လ', '07': 'ဇူလိုင်လ', '08': 'ဩဂုတ်လ',
+                '09': 'စက်တင်ဘာလ', '10': 'အောက်တိုဘာလ', '11': 'နိုဝင်ဘာလ', '12': 'ဒီဇင်ဘာလ'
             };
-            document.getElementById('headerMonthLabel').textContent = `${monthNames[targetMonth] || targetMonth} စုစုပေါင်း`;
+            
+            // လအမည်နှင့် "လသုံးငွေ" ကို အလိုအလျောက် Update ဖြစ်စေရန်
+            document.getElementById('headerMonthLabel').textContent = `${monthNames[targetMonth] || targetMonth}သုံးငွေ`;
 
             const monthTotal = expensesArray.filter(e => {
                 if(!e.date) return false;
