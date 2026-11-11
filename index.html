@@ -16,10 +16,6 @@
             background-color: #f8fafc;
         }
     </style>
-
-    <!-- Firebase App (Compat) & Realtime Database SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
@@ -312,8 +308,11 @@
         <span id="toastMessage">အောင်မြင်ပါသည်</span>
     </div>
 
-    <!-- JavaScript Application Logic with Firebase & Authentication -->
-    <script>
+    <!-- JavaScript Application Logic with Firebase Modular SDK (v13+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
         // Authorized Users Definition with Full Names & Shortcuts
         const VALID_USERS = [
             { fullName: "Thet Naing Oo", shortcut: "tno", password: "777734801" },
@@ -324,21 +323,20 @@
 
         let currentUser = null; // Currently logged in user object
 
-        // Firebase Configuration
+        // Firebase Configuration (Updated)
         const firebaseConfig = {
-          apiKey: "AIzaSyATgviLiobLeZU7_8JlNY8se2K75xbIOqk",
-          authDomain: "thant-home.firebaseapp.com",
-          databaseURL: "https://thant-home-default-rtdb.firebaseio.com",
-          projectId: "thant-home",
-          storageBucket: "thant-home.firebasestorage.app",
-          messagingSenderId: "261517816517",
-          appId: "1:261517816517:web:ad7e3ba5753e55f95236ac"
+            apiKey: "AIzaSyCVXngEDoEYxWCxVfWeRLhfquYGJ8IPzok",
+            authDomain: "thanthome-a17d2.firebaseapp.com",
+            projectId: "thanthome-a17d2",
+            storageBucket: "thanthome-a17d2.firebasestorage.app",
+            messagingSenderId: "393653782341",
+            appId: "1:393653782341:web:da9771d320f2adaeb6202c"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const expensesRef = db.ref('expenses');
+        // Initialize Firebase & Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const expensesRef = ref(db, 'expenses');
 
         // State Variables
         let expensesObj = {}; 
@@ -400,7 +398,7 @@
         }
 
         function setupRealtimeListener() {
-            expensesRef.on('value', (snapshot) => {
+            onValue(expensesRef, (snapshot) => {
                 const data = snapshot.val();
                 expensesObj = data || {};
                 populateYearDropdown();
@@ -458,7 +456,7 @@
             renderApp();
         }
 
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
 
             const date = document.getElementById('expDate').value;
@@ -482,27 +480,26 @@
                     "ပြင်ဆင်ခြင်း အတည်ပြုချက်",
                     "ဤအသုံးစရိတ် မှတ်တမ်းအသစ်ဖြင့် ပြင်ဆင်သိမ်းဆည်းရန် သေချာပါသလား။",
                     "edit",
-                    () => {
-                        expensesRef.child(editKey).set({ date, category, amount, note, userName: createdBy }, (error) => {
-                            if (error) {
-                                showToast("ပြင်ဆင်ခြင်း မအောင်မြင်ပါ", "error");
-                            } else {
-                                showToast("အသုံးစရိတ် မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ", "success");
-                                resetForm();
-                            }
-                        });
+                    async () => {
+                        try {
+                            const itemRef = ref(db, `expenses/${editKey}`);
+                            await set(itemRef, { date, category, amount, note, userName: createdBy });
+                            showToast("အသုံးစရိတ် မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ", "success");
+                            resetForm();
+                        } catch (error) {
+                            showToast("ပြင်ဆင်ခြင်း မအောင်မြင်ပါ", "error");
+                        }
                     }
                 );
             } else {
-                const newExpense = { date, category, amount, note, userName };
-                expensesRef.push(newExpense, (error) => {
-                    if (error) {
-                        showToast("ထည့်သွင်းခြင်း မအောင်မြင်ပါ", "error");
-                    } else {
-                        showToast("အသုံးစရိတ် အသစ် ထည့်သွင်းပြီးပါပြီ", "success");
-                        resetForm();
-                    }
-                });
+                try {
+                    const newExpense = { date, category, amount, note, userName };
+                    await push(expensesRef, newExpense);
+                    showToast("အသုံးစရိတ် အသစ် ထည့်သွင်းပြီးပါပြီ", "success");
+                    resetForm();
+                } catch (error) {
+                    showToast("ထည့်သွင်းခြင်း မအောင်မြင်ပါ", "error");
+                }
             }
         }
 
@@ -538,14 +535,14 @@
                 "ဖျက်ရန် အတည်ပြုချက်",
                 `ရက်စွဲ (${exp.date}) မှ (${exp.category}) - ${exp.amount.toLocaleString()} ကျပ် စာရင်းကို ဖျက်ရန် သေချာပါသလား။`,
                 "delete",
-                () => {
-                    expensesRef.child(firebaseKey).remove((error) => {
-                        if (error) {
-                            showToast("ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
-                        } else {
-                            showToast("အသုံးစရိတ် မှတ်တမ်း ဖျက်ပြီးပါပြီ", "success");
-                        }
-                    });
+                async () => {
+                    try {
+                        const itemRef = ref(db, `expenses/${firebaseKey}`);
+                        await remove(itemRef);
+                        showToast("အသုံးစရိတ် မှတ်တမ်း ဖျက်ပြီးပါပြီ", "success");
+                    } catch (error) {
+                        showToast("ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
+                    }
                 }
             );
         }
@@ -559,21 +556,20 @@
                 "အစုလိုက် ဖျက်ရန် အတည်ပြုချက်",
                 `ရွေးချယ်ထားသော စာရင်း အရေအတွက် (${count}) ခု ကို အပြီးတိုင် ဖျက်ရန် သေချာပါသလား။`,
                 "delete",
-                () => {
+                async () => {
                     const keysToDelete = Array.from(checkboxes).map(cb => cb.dataset.key);
                     let updates = {};
                     keysToDelete.forEach(key => {
-                        updates[key] = null;
+                        updates[`expenses/${key}`] = null;
                     });
 
-                    expensesRef.update(updates, (error) => {
-                        if (error) {
-                            showToast("အစုလိုက် ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
-                        } else {
-                            document.getElementById('selectAllCheckbox').checked = false;
-                            showToast(`ရွေးချယ်ထားသော စာရင်း (${count}) ခု ဖျက်ပြီးပါပြီ`, "success");
-                        }
-                    });
+                    try {
+                        await update(ref(db), updates);
+                        document.getElementById('selectAllCheckbox').checked = false;
+                        showToast(`ရွေးချယ်ထားသော စာရင်း (${count}) ခု ဖျက်ပြီးပါပြီ`, "success");
+                    } catch (error) {
+                        showToast("အစုလိုက် ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
+                    }
                 }
             );
         }
@@ -801,6 +797,22 @@
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
+
+        // Attach functions to global window scope so HTML inline attributes (e.g. onclick/onsubmit) can access them
+        window.handleLogin = handleLogin;
+        window.handleLogout = handleLogout;
+        window.handleFormSubmit = handleFormSubmit;
+        window.resetForm = resetForm;
+        window.editExpense = editExpense;
+        window.confirmDelete = confirmDelete;
+        window.confirmBulkDelete = confirmBulkDelete;
+        window.toggleSelectAll = toggleSelectAll;
+        window.updateBulkDeleteButton = updateBulkDeleteButton;
+        window.resetFilters = resetFilters;
+        window.applyFilters = applyFilters;
+        window.switchView = switchView;
+        window.renderApp = renderApp;
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
