@@ -23,215 +23,265 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header Navigation -->
-    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <div class="bg-white text-indigo-600 p-2.5 rounded-xl shadow-md">
-                    <i class="fa-solid fa-wallet text-2xl"></i>
+    <!-- LOGIN SCREEN MODAL (Visible by Default until Authorized) -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6 border border-slate-100">
+            <div class="text-center space-y-2">
+                <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-sm">
+                    <i class="fa-solid fa-lock"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-bold">အိမ်အသုံးစရိတ် စီမံခန့်ခွဲရန်</h1>
-                    <p class="text-xs text-indigo-200">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ (Realtime)</p>
-                </div>
-            </div>
-            <!-- Header Totals: Today and Current/Selected Month -->
-            <div class="flex items-center gap-2">
-                <div class="bg-indigo-700/80 px-3.5 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                    <span class="text-[10px] text-indigo-200 block">ယနေ့ စုစုပေါင်း</span>
-                    <span id="headerTodaySpent" class="text-sm sm:text-base font-bold text-white">0 ကျပ်</span>
-                </div>
-                <div class="bg-indigo-700/80 px-3.5 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                    <span id="headerMonthLabel" class="text-[10px] text-indigo-200 block">နိုဝင်ဘာ စုစုပေါင်း</span>
-                    <span id="headerMonthSpent" class="text-sm sm:text-base font-bold text-white">0 ကျပ်</span>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- Left Column: Add / Edit Form -->
-        <section class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit sticky top-24">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h2 id="formTitle" class="text-lg font-bold text-indigo-600 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-plus"></i> စရိတ်အသစ် ထည့်သွင်းရန်
-                </h2>
-                <button id="cancelEditBtn" onclick="resetForm()" class="hidden text-xs text-rose-500 hover:text-rose-700 font-medium">
-                    <i class="fa-solid fa-xmark"></i> ပယ်ဖျက်ရန်
-                </button>
+                <h2 class="text-xl font-bold text-slate-800">စနစ်အတွင်းသို့ ဝင်ရောက်ရန်</h2>
+                <p class="text-xs text-slate-500">အသုံးပြုသူအမည် (သို့) အတိုကောက် နှင့် လျှို့ဝှက်နံပါတ် ဖြည့်ပါ</p>
             </div>
 
-            <form id="expenseForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                <input type="hidden" id="editKey" value="">
-
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">ရက်စွဲ (Date) <span class="text-rose-500">*</span></label>
-                    <input type="date" id="expDate" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">အသုံးပြုသူအမည် (Username / Shortcut)</label>
+                    <input type="text" id="loginUser" required placeholder="ဥပမာ - tno, ppn, hla, yht" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">အမျိုးအစား (Category) <span class="text-rose-500">*</span></label>
-                    <select id="expCategory" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
-                        <option value="">အမျိုးအစား ရွေးချယ်ပါ</option>
-                        <option value="အစားအသောက်">🥗 အစားအသောက် (Food)</option>
-                        <option value="အိမ်လခ/မီတာ">🏠 အိမ်လခ / မီတာ / ရေ (Housing & Utilities)</option>
-                        <option value="သယ်ယူပို့ဆောင်ရေး">🚗 သယ်ယူပို့ဆောင်ရေး (Transport)</option>
-                        <option value="ကျန်းမာရေး">💊 ကျန်းမာရေး (Health)</option>
-                        <option value="ပညာရေး">📚 ပညာရေး (Education)</option>
-                        <option value="အဝတ်အထည်">👕 အဝတ်အထည် (Clothing)</option>
-                        <option value="ဖျော်ဖြေရေး">🎉 ဖျော်ဖြေရေး & အထွေထွေ (Entertainment & Misc)</option>
-                    </select>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">လျှို့ဝှက်နံပါတ် (Password)</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">ပမာဏ (Amount - MMK) <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <input type="number" id="expAmount" min="1" placeholder="ဥပမာ - 15000" required class="w-full pl-3.5 pr-12 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
-                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">ကျပ်</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">မှတ်ချက် / အကြောင်းအရာ (Note)</label>
-                    <textarea id="expNote" rows="2" placeholder="ဥပမာ - ဈေးဝယ်ထွက်သည်..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50"></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> စာရင်းသိမ်းဆည်းမည်
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login ဝင်မည်
                 </button>
             </form>
-        </section>
+        </div>
+    </div>
 
-        <!-- Right Column: Dashboard & Tables -->
-        <section class="lg:col-span-2 space-y-6">
-
-            <!-- Filter & Search Panel -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-indigo-600"></i> ရှာဖွေရန် & စစ်ထုတ်ရန် (Filter & Search)
-                    </h2>
-                    <button onclick="resetFilters()" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-medium">
-                        စစ်ထုတ်မှုများ ဖယ်ရှားရန်
-                    </button>
+    <!-- MAIN APP CONTENT (Hidden until login) -->
+    <div id="mainApp" class="hidden min-h-screen flex flex-col">
+        <!-- Header Navigation -->
+        <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white text-indigo-600 p-2.5 rounded-xl shadow-md">
+                        <i class="fa-solid fa-wallet text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold">အိမ်အသုံးစရိတ် စီမံခန့်ခွဲရန်</h1>
+                        <p class="text-xs text-indigo-200">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ (Realtime)</p>
+                    </div>
                 </div>
 
-                <!-- Tab Navigation for Views -->
-                <div class="flex bg-slate-100 p-1 rounded-xl text-sm font-medium">
-                    <button onclick="switchView('all')" id="tab-all" class="flex-1 py-2 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold">အားလုံး</button>
-                    <button onclick="switchView('daily')" id="tab-daily" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နေ့စဉ်</button>
-                    <button onclick="switchView('monthly')" id="tab-monthly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">လစဉ်</button>
-                    <button onclick="switchView('yearly')" id="tab-yearly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နှစ်စဉ်</button>
-                </div>
-
-                <!-- Date Range Search Inputs & Search Button Section -->
-                <div class="space-y-3 pt-2 border-t border-slate-100">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">စတင်သည့်ရက် (From Date)</label>
-                            <input type="date" id="filterStartDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">ပြီးဆုံးသည့်ရက် (To Date)</label>
-                            <input type="date" id="filterEndDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        </div>
-                    </div>
-
-                    <!-- Dropdown selectors for specific month/year breakdown -->
-                    <div id="dynamicFilterControls" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div id="monthSelectorWrapper" class="hidden">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">လ ရွေးချယ်ရန် (Month)</label>
-                            <select id="filterMonth" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                <option value="">လ အားလုံး</option>
-                                <option value="01">January (ဇန်နဝါရီ)</option>
-                                <option value="02">February (ဖေဖော်ဝါရီ)</option>
-                                <option value="03">March (မတ်)</option>
-                                <option value="04">April (ဧပြီ)</option>
-                                <option value="05">May (မေ)</option>
-                                <option value="06">June (ဇွန်)</option>
-                                <option value="07">July (ဇူလိုင်)</option>
-                                <option value="08">August (ဩဂုတ်)</option>
-                                <option value="09">September (စက်တင်ဘာ)</option>
-                                <option value="10">October (အောက်တိုဘာ)</option>
-                                <option value="11">November (နိုဝင်ဘာ)</option>
-                                <option value="12">December (ဒီဇင်ဘာ)</option>
-                            </select>
-                        </div>
-                        <div id="yearSelectorWrapper" class="hidden">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">နှစ် ရွေးချယ်ရန် (Year)</label>
-                            <select id="filterYear" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                <option value="">နှစ် အားလုံး</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons: Search & Reset -->
-                    <div class="flex items-center gap-2 pt-1">
-                        <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm text-sm transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-magnifying-glass"></i> ရှာမည် (Search)
-                        </button>
-                        <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-1.5" title="စစ်ထုတ်မှု ဖယ်ရှားရန်">
-                            <i class="fa-solid fa-rotate-right"></i> ပြန်စရန်
+                <div class="flex items-center gap-3 flex-wrap justify-center">
+                    <!-- Current Logged In User Info -->
+                    <div class="flex items-center gap-2 bg-indigo-700/90 px-3.5 py-1.5 rounded-xl border border-indigo-500/40">
+                        <i class="fa-solid fa-user-circle text-indigo-200 text-lg"></i>
+                        <span id="currentUserDisplay" class="text-xs sm:text-sm font-semibold text-white"></span>
+                        <button onclick="handleLogout()" class="ml-2 text-xs bg-rose-500 hover:bg-rose-600 text-white px-2.5 py-1 rounded-lg transition" title="ထွက်မည်">
+                            <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <!-- Expense List & Table Container -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <!-- Table Header Actions -->
-                <div class="p-4 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <!-- Header Totals -->
                     <div class="flex items-center gap-2">
-                        <span id="recordCountBadge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0 ခု</span>
-                        <h3 class="font-bold text-slate-700 text-sm">အသုံးစရိတ် စာရင်းများ</h3>
+                        <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
+                            <span class="text-[10px] text-indigo-200 block">ယနေ့ စုစုပေါင်း</span>
+                            <span id="headerTodaySpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
+                        </div>
+                        <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
+                            <span id="headerMonthLabel" class="text-[10px] text-indigo-200 block">နိုဝင်ဘာ စုစုပေါင်း</span>
+                            <span id="headerMonthSpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
+                        </div>
                     </div>
-                    <!-- Bulk Delete Button -->
-                    <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-trash-can"></i> ရွေးချယ်ထားသမျှ ဖျက်မည် (<span id="selectedCount">0</span>)
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column: Add / Edit Form -->
+            <section class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit sticky top-24">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                    <h2 id="formTitle" class="text-lg font-bold text-indigo-600 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i> စရိတ်အသစ် ထည့်သွင်းရန်
+                    </h2>
+                    <button id="cancelEditBtn" onclick="resetForm()" class="hidden text-xs text-rose-500 hover:text-rose-700 font-medium">
+                        <i class="fa-solid fa-xmark"></i> ပယ်ဖျက်ရန်
                     </button>
                 </div>
 
-                <!-- Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-100/70 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
-                                <th class="p-3.5 text-center w-10">
-                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
-                                </th>
-                                <th class="p-3.5">ရက်စွဲ</th>
-                                <th class="p-3.5">အမျိုးအစား</th>
-                                <th class="p-3.5">မှတ်ချက်</th>
-                                <th class="p-3.5 text-right">ပမာဏ (ကျပ်)</th>
-                                <th class="p-3.5 text-center">လုပ်ဆောင်ချက်</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expenseTableBody" class="divide-y divide-slate-100">
-                            <!-- Populated dynamically via JS -->
-                        </tbody>
-                    </table>
-                </div>
+                <form id="expenseForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="editKey" value="">
 
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden py-12 text-center">
-                    <div class="text-slate-300 text-4xl mb-2">
-                        <i class="fa-solid fa-receipt"></i>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ရက်စွဲ (Date) <span class="text-rose-500">*</span></label>
+                        <input type="date" id="expDate" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
                     </div>
-                    <p class="text-slate-500 text-sm font-medium">မှတ်တမ်း မရှိသေးပါ</p>
-                    <p class="text-slate-400 text-xs mt-1">ဘယ်ဘက်မှ စာရင်းအသစ် စတင်ထည့်သွင်းပါ</p>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">အမျိုးအစား (Category) <span class="text-rose-500">*</span></label>
+                        <select id="expCategory" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                            <option value="">အမျိုးအစား ရွေးချယ်ပါ</option>
+                            <option value="အစားအသောက်">🥗 အစားအသောက် (Food)</option>
+                            <option value="အိမ်လခ/မီတာ">🏠 အိမ်လခ / မီတာ / ရေ (Housing & Utilities)</option>
+                            <option value="သယ်ယူပို့ဆောင်ရေး">🚗 သယ်ယူပို့ဆောင်ရေး (Transport)</option>
+                            <option value="ကျန်းမာရေး">💊 ကျန်းမာရေး (Health)</option>
+                            <option value="ပညာရေး">📚 ပညာရေး (Education)</option>
+                            <option value="အဝတ်အထည်">👕 အဝတ်အထည် (Clothing)</option>
+                            <option value="ဖျော်ဖြေရေး">🎉 ဖျော်ဖြေရေး & အထွေထွေ (Entertainment & Misc)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ပမာဏ (Amount - MMK) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <input type="number" id="expAmount" min="1" placeholder="ဥပမာ - 15000" required class="w-full pl-3.5 pr-12 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                            <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">ကျပ်</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">မှတ်ချက် / အကြောင်းအရာ (Note)</label>
+                        <textarea id="expNote" rows="2" placeholder="ဥပမာ - ဈေးဝယ်ထွက်သည်..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> စာရင်းသိမ်းဆည်းမည်
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Column: Dashboard & Tables -->
+            <section class="lg:col-span-2 space-y-6">
+
+                <!-- Filter & Search Panel -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-indigo-600"></i> ရှာဖွေရန် & စစ်ထုတ်ရန် (Filter & Search)
+                        </h2>
+                        <button onclick="resetFilters()" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-medium">
+                            စစ်ထုတ်မှုများ ဖယ်ရှားရန်
+                        </button>
+                    </div>
+
+                    <!-- Tab Navigation for Views -->
+                    <div class="flex bg-slate-100 p-1 rounded-xl text-sm font-medium">
+                        <button onclick="switchView('all')" id="tab-all" class="flex-1 py-2 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold">အားလုံး</button>
+                        <button onclick="switchView('daily')" id="tab-daily" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နေ့စဉ်</button>
+                        <button onclick="switchView('monthly')" id="tab-monthly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">လစဉ်</button>
+                        <button onclick="switchView('yearly')" id="tab-yearly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နှစ်စဉ်</button>
+                    </div>
+
+                    <!-- Date Range Search Inputs & Search Button Section -->
+                    <div class="space-y-3 pt-2 border-t border-slate-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">စတင်သည့်ရက် (From Date)</label>
+                                <input type="date" id="filterStartDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">ပြီးဆုံးသည့်ရက် (To Date)</label>
+                                <input type="date" id="filterEndDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- Dropdown selectors for specific month/year breakdown -->
+                        <div id="dynamicFilterControls" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div id="monthSelectorWrapper" class="hidden">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">လ ရွေးချယ်ရန် (Month)</label>
+                                <select id="filterMonth" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                    <option value="">လ အားလုံး</option>
+                                    <option value="01">January (ဇန်နဝါရီ)</option>
+                                    <option value="02">February (ဖေဖော်ဝါရီ)</option>
+                                    <option value="03">March (မတ်)</option>
+                                    <option value="04">April (ဧပြီ)</option>
+                                    <option value="05">May (မေ)</option>
+                                    <option value="06">June (ဇွန်)</option>
+                                    <option value="07">July (ဇူလိုင်)</option>
+                                    <option value="08">August (ဩဂုတ်)</option>
+                                    <option value="09">September (စက်တင်ဘာ)</option>
+                                    <option value="10">October (အောက်တိုဘာ)</option>
+                                    <option value="11">November (နိုဝင်ဘာ)</option>
+                                    <option value="12">December (ဒီဇင်ဘာ)</option>
+                                </select>
+                            </div>
+                            <div id="yearSelectorWrapper" class="hidden">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">နှစ် ရွေးချယ်ရန် (Year)</label>
+                                <select id="filterYear" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                    <option value="">နှစ် အားလုံး</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons: Search & Reset -->
+                        <div class="flex items-center gap-2 pt-1">
+                            <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm text-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-magnifying-glass"></i> ရှာမည် (Search)
+                            </button>
+                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-1.5" title="စစ်ထုတ်မှု ဖယ်ရှားရန်">
+                                <i class="fa-solid fa-rotate-right"></i> ပြန်စရန်
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Table Footer Total -->
-                <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-sm font-bold">
-                    <span class="text-slate-600">ရွေးချယ်ထားသော စာရင်းများ၏ စုစုပေါင်း:</span>
-                    <span id="filteredTotalAmount" class="text-indigo-600 text-lg">0 ကျပ်</span>
-                </div>
-            </div>
+                <!-- Expense List & Table Container -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <!-- Table Header Actions -->
+                    <div class="p-4 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span id="recordCountBadge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0 ခု</span>
+                            <h3 class="font-bold text-slate-700 text-sm">အသုံးစရိတ် စာရင်းများ</h3>
+                        </div>
+                        <!-- Bulk Delete Button -->
+                        <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> ရွေးချယ်ထားသမျှ ဖျက်မည် (<span id="selectedCount">0</span>)
+                        </button>
+                    </div>
 
-        </section>
-    </main>
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-100/70 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-3.5 text-center w-10">
+                                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
+                                    </th>
+                                    <th class="p-3.5">ရက်စွဲ</th>
+                                    <th class="p-3.5">အသုံးပြုသူ</th>
+                                    <th class="p-3.5">အမျိုးအစား</th>
+                                    <th class="p-3.5">မှတ်ချက်</th>
+                                    <th class="p-3.5 text-right">ပမာဏ (ကျပ်)</th>
+                                    <th class="p-3.5 text-center">လုပ်ဆောင်ချက်</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseTableBody" class="divide-y divide-slate-100">
+                                <!-- Populated dynamically via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden py-12 text-center">
+                        <div class="text-slate-300 text-4xl mb-2">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">မှတ်တမ်း မရှိသေးပါ</p>
+                        <p class="text-slate-400 text-xs mt-1">ဘယ်ဘက်မှ စာရင်းအသစ် စတင်ထည့်သွင်းပါ</p>
+                    </div>
+
+                    <!-- Table Footer Total -->
+                    <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-sm font-bold">
+                        <span class="text-slate-600">ရွေးချယ်ထားသော စာရင်းများ၏ စုစုပေါင်း:</span>
+                        <span id="filteredTotalAmount" class="text-indigo-600 text-lg">0 ကျပ်</span>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
+            <p>အိမ်အသုံးစရိတ် စီမံခန့်ခွဲမှု ဝဘ်အက်ပလီကေးရှင်း &copy; 2026 | Firebase Realtime Database ဖြင့် ချိတ်ဆက်ထားသည်</p>
+        </footer>
+    </div>
 
     <!-- Custom Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -262,13 +312,18 @@
         <span id="toastMessage">အောင်မြင်ပါသည်</span>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
-        <p>အိမ်အသုံးစရိတ် စီမံခန့်ခွဲမှု ဝဘ်အက်ပလီကေးရှင်း &copy; 2026 | Firebase Realtime Database ဖြင့် ချိတ်ဆက်ထားသည်</p>
-    </footer>
-
-    <!-- JavaScript Application Logic with Firebase -->
+    <!-- JavaScript Application Logic with Firebase & Authentication -->
     <script>
+        // Authorized Users Definition with Full Names & Shortcuts
+        const VALID_USERS = [
+            { fullName: "Thet Naing Oo", shortcut: "tno", password: "777734801" },
+            { fullName: "Po Po Nyunt", shortcut: "ppn", password: "777734802" },
+            { fullName: "Htun Lin Aung", shortcut: "hla", password: "777734803" },
+            { fullName: "Ye Htet Aung", shortcut: "yht", password: "777734846" }
+        ];
+
+        let currentUser = null; // Currently logged in user object
+
         // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyATgviLiobLeZU7_8JlNY8se2K75xbIOqk",
@@ -286,22 +341,64 @@
         const expensesRef = db.ref('expenses');
 
         // State Variables
-        let expensesObj = {}; // Stores items as { firebaseKey: {date, category, amount, note} }
-        let currentView = 'all'; // 'all', 'daily', 'monthly', 'yearly'
+        let expensesObj = {}; 
+        let currentView = 'all'; 
         let pendingAction = null; 
 
-        // Initialize App on Load & Listen to Realtime DB updates
         window.onload = function() {
+            checkSession();
+        };
+
+        function checkSession() {
+            const savedUser = localStorage.getItem('expense_app_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('loginUser').value.trim().toLowerCase();
+            const passInput = document.getElementById('loginPass').value.trim();
+
+            const matchedUser = VALID_USERS.find(u => 
+                (u.shortcut.toLowerCase() === userInput || u.fullName.toLowerCase() === userInput) && 
+                u.password === passInput
+            );
+
+            if (matchedUser) {
+                currentUser = matchedUser;
+                localStorage.setItem('expense_app_user', JSON.stringify(matchedUser));
+                document.getElementById('loginForm').reset();
+                showMainApp();
+                showToast(`မင်္ဂလာပါ ${matchedUser.fullName}`, "success");
+            } else {
+                showToast("အသုံးပြုသူအမည် သို့မဟုတ် လျှို့ဝှက်နံပါတ် မှားယွင်းနေပါသည်", "error");
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('expense_app_user');
+            currentUser = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            showToast("Login မှ ထွက်ပြီးပါပြီ", "success");
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('currentUserDisplay').textContent = currentUser.fullName;
             setDefaultDate();
             setupRealtimeListener();
-        };
+        }
 
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expDate').value = today;
         }
 
-        // Realtime Database Listener (syncs across devices automatically)
         function setupRealtimeListener() {
             expensesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -333,7 +430,6 @@
             });
         }
 
-        // Switch Tabs & Filter Views
         function switchView(view) {
             currentView = view;
             document.querySelectorAll('[id^="tab-"]').forEach(btn => {
@@ -362,7 +458,6 @@
             renderApp();
         }
 
-        // Form Submit Handler (Add or Update in Firebase)
         function handleFormSubmit(event) {
             event.preventDefault();
 
@@ -377,13 +472,18 @@
                 return;
             }
 
+            const userName = currentUser ? currentUser.fullName : 'အမည်မသိ';
+
             if (editKey !== "") {
+                const existingItem = expensesObj[editKey];
+                const createdBy = existingItem ? (existingItem.userName || userName) : userName;
+
                 openModal(
                     "ပြင်ဆင်ခြင်း အတည်ပြုချက်",
                     "ဤအသုံးစရိတ် မှတ်တမ်းအသစ်ဖြင့် ပြင်ဆင်သိမ်းဆည်းရန် သေချာပါသလား။",
                     "edit",
                     () => {
-                        expensesRef.child(editKey).set({ date, category, amount, note }, (error) => {
+                        expensesRef.child(editKey).set({ date, category, amount, note, userName: createdBy }, (error) => {
                             if (error) {
                                 showToast("ပြင်ဆင်ခြင်း မအောင်မြင်ပါ", "error");
                             } else {
@@ -394,7 +494,7 @@
                     }
                 );
             } else {
-                const newExpense = { date, category, amount, note };
+                const newExpense = { date, category, amount, note, userName };
                 expensesRef.push(newExpense, (error) => {
                     if (error) {
                         showToast("ထည့်သွင်းခြင်း မအောင်မြင်ပါ", "error");
@@ -463,7 +563,7 @@
                     const keysToDelete = Array.from(checkboxes).map(cb => cb.dataset.key);
                     let updates = {};
                     keysToDelete.forEach(key => {
-                        updates[key] = null; // Setting null in Firebase removes the node
+                        updates[key] = null;
                     });
 
                     expensesRef.update(updates, (error) => {
@@ -519,20 +619,17 @@
             const currentYearStr = now.getFullYear().toString();
             const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
 
-            // Convert expensesObj to array with firebase keys
             let expensesArray = Object.keys(expensesObj).map(key => ({
                 firebaseKey: key,
                 ...expensesObj[key]
             }));
 
-            // Header summary calculations
             const todayStr = now.toISOString().split('T')[0];
             const todayTotal = expensesArray
                 .filter(e => e.date === todayStr)
                 .reduce((sum, e) => sum + e.amount, 0);
             document.getElementById('headerTodaySpent').textContent = todayTotal.toLocaleString() + ' ကျပ်';
 
-            // Header Month label & total calculation
             let targetMonth = selectedMonth || currentMonthStr;
             let targetYear = selectedYear || currentYearStr;
 
@@ -550,7 +647,6 @@
             }).reduce((sum, e) => sum + e.amount, 0);
             document.getElementById('headerMonthSpent').textContent = monthTotal.toLocaleString() + ' ကျပ်';
 
-            // Filter table list data
             let filtered = [...expensesArray];
 
             if (startDate) {
@@ -596,6 +692,11 @@
                             <input type="checkbox" data-key="${item.firebaseKey}" onchange="updateBulkDeleteButton()" class="expense-checkbox rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
                         </td>
                         <td class="p-3.5 font-medium text-xs sm:text-sm text-slate-600 whitespace-nowrap">${formatDateBurmese(item.date)}</td>
+                        <td class="p-3.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">
+                                <i class="fa-solid fa-user text-indigo-500 text-[10px]"></i> ${item.userName || 'အမည်မသိ'}
+                            </span>
+                        </td>
                         <td class="p-3.5">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">
                                 ${item.category}
