@@ -392,9 +392,17 @@
             fetchExpensesData(); 
         }
 
+        // 🟢 ယနေ့ရက်စွဲကို ဒေသတွင်းစက်နာရီ (Local Date) အတိုင်း တိကျစွာ ရယူပေးမည့် function
+        function getTodayLocalDateString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function setDefaultDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('expDate').value = today;
+            document.getElementById('expDate').value = getTodayLocalDateString();
         }
 
         function fetchExpensesData() {
@@ -511,7 +519,7 @@
             document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-circle-plus"></i> စရိတ်အသစ် ထည့်သွင်းရန်';
             document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> စာရင်းသိမ်းဆည်းမည်';
             document.getElementById('cancelEditBtn').classList.add('hidden');
-            setDefaultDate(); // Reset လုပ်လျှင်လည်း ယနေ့ရက်စွဲကို အလိုအလျောက် ပြန်ထည့်ပေးမည်
+            setDefaultDate(); 
         }
 
         function editExpense(firebaseKey) {
@@ -624,7 +632,8 @@
                 ...expensesObj[key]
             }));
 
-            const todayStr = now.toISOString().split('T')[0];
+            // 🟢 ယနေ့ရက်စွဲကို တိကျစွာ နှိုင်းယှဉ်ရန် Local String ဖြင့် ယူမည်
+            const todayStr = getTodayLocalDateString();
             const todayTotal = expensesArray
                 .filter(e => e.date === todayStr)
                 .reduce((sum, e) => sum + e.amount, 0);
@@ -639,7 +648,6 @@
                 '09': 'စက်တင်ဘာလ', '10': 'အောက်တိုဘာလ', '11': 'နိုဝင်ဘာလ', '12': 'ဒီဇင်ဘာလ'
             };
             
-            // လအမည်နှင့် "လသုံးငွေ" ကို အလိုအလျောက် Update ဖြစ်စေရန်
             document.getElementById('headerMonthLabel').textContent = `${monthNames[targetMonth] || targetMonth}သုံးငွေ`;
 
             const monthTotal = expensesArray.filter(e => {
