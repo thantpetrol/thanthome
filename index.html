@@ -59,7 +59,7 @@
                     </div>
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold">အိမ်အသုံးစရိတ် စီမံခန့်ခွဲရန်</h1>
-                        <p class="text-xs text-indigo-200">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ (Realtime)</p>
+                        <p class="text-xs text-indigo-200">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ (Optimized Connection)</p>
                     </div>
                 </div>
 
@@ -311,7 +311,7 @@
     <!-- JavaScript Application Logic with Firebase Modular SDK (v13+) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+        import { getDatabase, ref, push, set, remove, update, get } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
         // Authorized Users Definition with Full Names & Shortcuts
         const VALID_USERS = [
@@ -323,7 +323,7 @@
 
         let currentUser = null; // Currently logged in user object
 
-        // Firebase Configuration (Updated)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCVXngEDoEYxWCxVfWeRLhfquYGJ8IPzok",
             authDomain: "thanthome-a17d2.firebaseapp.com",
@@ -389,7 +389,7 @@
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('currentUserDisplay').textContent = currentUser.fullName;
             setDefaultDate();
-            setupRealtimeListener();
+            fetchExpensesData(); // ဝင်ရောက်ပြီးချိန်တွင် ဒေတာကို တစ်ကြိမ်တည်း ဆွဲယူမည် (Connection အမြဲမပွင့်စေရန်)
         }
 
         function setDefaultDate() {
@@ -397,13 +397,14 @@
             document.getElementById('expDate').value = today;
         }
 
-        function setupRealtimeListener() {
-            onValue(expensesRef, (snapshot) => {
+        // အမြဲချိတ်ဆက်နေသော onValue အစား လိုအပ်မှသာ တစ်ကြိမ်ချင်း ဝင်ဖတ်သော get() ကို အသုံးပြုထားပါသည်
+        function fetchExpensesData() {
+            get(expensesRef).then((snapshot) => {
                 const data = snapshot.val();
                 expensesObj = data || {};
                 populateYearDropdown();
                 renderApp();
-            }, (error) => {
+            }).catch((error) => {
                 console.error("Firebase Read Error:", error);
                 showToast("ဒေတာ ဆွဲယူရာတွင် အမှားအယွင်းရှိပါသည်", "error");
             });
@@ -486,6 +487,7 @@
                             await set(itemRef, { date, category, amount, note, userName: createdBy });
                             showToast("အသုံးစရိတ် မှတ်တမ်း ပြင်ဆင်ပြီးပါပြီ", "success");
                             resetForm();
+                            fetchExpensesData(); // ပြင်ဆင်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
                         } catch (error) {
                             showToast("ပြင်ဆင်ခြင်း မအောင်မြင်ပါ", "error");
                         }
@@ -497,6 +499,7 @@
                     await push(expensesRef, newExpense);
                     showToast("အသုံးစရိတ် အသစ် ထည့်သွင်းပြီးပါပြီ", "success");
                     resetForm();
+                    fetchExpensesData(); // အသစ်ထည့်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
                 } catch (error) {
                     showToast("ထည့်သွင်းခြင်း မအောင်မြင်ပါ", "error");
                 }
@@ -540,6 +543,7 @@
                         const itemRef = ref(db, `expenses/${firebaseKey}`);
                         await remove(itemRef);
                         showToast("အသုံးစရိတ် မှတ်တမ်း ဖျက်ပြီးပါပြီ", "success");
+                        fetchExpensesData(); // ဖျက်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
                     } catch (error) {
                         showToast("ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
                     }
@@ -567,6 +571,7 @@
                         await update(ref(db), updates);
                         document.getElementById('selectAllCheckbox').checked = false;
                         showToast(`ရွေးချယ်ထားသော စာရင်း (${count}) ခု ဖျက်ပြီးပါပြီ`, "success");
+                        fetchExpensesData(); // အစုလိုက်ဖျက်ပြီးပါက ဒေတာကို ပြန်လည်ဆွဲယူပါ
                     } catch (error) {
                         showToast("အစုလိုက် ဖျက်ဆီးခြင်း မအောင်မြင်ပါ", "error");
                     }
@@ -798,7 +803,6 @@
             }, 3000);
         }
 
-        // Attach functions to global window scope so HTML inline attributes (e.g. onclick/onsubmit) can access them
         window.handleLogin = handleLogin;
         window.handleLogout = handleLogout;
         window.handleFormSubmit = handleFormSubmit;
