@@ -2,7 +2,7 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>အိမ်အသုံးစရိတ် စီမံခန့်ခွဲမှုစနစ်</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,179 +11,203 @@
     <!-- Google Fonts -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap');
+        
+        :root {
+            /* ဖုန်းမျက်နှာပြင်အရွယ်အစားပေါ်မူတည်ပြီး စာလုံးအရွယ်အစား အလိုအလျောက် ချိန်ညှိပေးမည် */
+            font-size: clamp(13px, 3.6vw, 15.5px);
+        }
+
         body {
             font-family: 'Pyidaungsu', sans-serif;
             background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ဖုန်းတွင် Input နှိပ်လျှင် Auto-Zoom မဖြစ်စေရန် */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        @media (min-width: 640px) {
+            input, select, textarea {
+                font-size: 0.875rem !important;
+            }
         }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col">
+<body class="text-slate-800 min-h-screen flex flex-col select-none sm:select-auto">
 
-    <!-- LOGIN SCREEN MODAL (Visible by Default until Authorized) -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6 border border-slate-100">
-            <div class="text-center space-y-2">
-                <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-sm">
+    <!-- LOGIN SCREEN MODAL -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-8 space-y-5 border border-slate-100">
+            <div class="text-center space-y-1.5">
+                <div class="bg-indigo-100 text-indigo-600 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl mx-auto flex items-center justify-center text-2xl sm:text-3xl shadow-sm">
                     <i class="fa-solid fa-lock"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-800">စနစ်အတွင်းသို့ ဝင်ရောက်ရန်</h2>
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800">စနစ်အတွင်းသို့ ဝင်ရောက်ရန်</h2>
                 <p class="text-xs text-slate-500">အသုံးပြုသူအမည် (သို့) အတိုကောက် နှင့် လျှို့ဝှက်နံပါတ် ဖြည့်ပါ</p>
             </div>
 
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">အသုံးပြုသူအမည် (Username / Shortcut)</label>
-                    <input type="text" id="loginUser" required placeholder="ဥပမာ - tno, ppn, hla, yht" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                    <input type="text" id="loginUser" required placeholder="ဥပမာ - tno, ppn, hla, yht" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">လျှို့ဝှက်နံပါတ် (Password)</label>
-                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                    <input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                 </div>
 
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center gap-2">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-150 text-sm flex items-center justify-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Login ဝင်မည်
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP CONTENT (Hidden until login) -->
+    <!-- MAIN APP CONTENT -->
     <div id="mainApp" class="hidden min-h-screen flex flex-col">
-        <!-- Header Navigation -->
-        <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white text-indigo-600 p-2.5 rounded-xl shadow-md">
-                        <i class="fa-solid fa-wallet text-2xl"></i>
+        <!-- Header Navigation (Compact for Mobile) -->
+        <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 space-y-2.5">
+                <!-- Top Row: App Title & User Profile -->
+                <div class="flex justify-between items-center gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <div class="bg-white text-indigo-600 p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-sm shrink-0">
+                            <i class="fa-solid fa-wallet text-base sm:text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h1 class="text-base sm:text-xl font-bold truncate">အိမ်အသုံးစရိတ် စီမံခန့်ခွဲရန်</h1>
+                            <p class="text-[10px] sm:text-xs text-indigo-200 truncate hidden sm:block">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 class="text-xl sm:text-2xl font-bold">အိမ်အသုံးစရိတ် စီမံခန့်ခွဲရန်</h1>
-                        <p class="text-xs text-indigo-200">နေ့စဉ်၊ လစဉ်နဲ့ နှစ်စဉ် ငွေစာရင်းများကို စနစ်တကျ မှတ်တမ်းတင်ပါ (Optimized Connection)</p>
-                    </div>
-                </div>
 
-                <div class="flex items-center gap-3 flex-wrap justify-center">
-                    <!-- Current Logged In User Info -->
-                    <div class="flex items-center gap-2 bg-indigo-700/90 px-3.5 py-1.5 rounded-xl border border-indigo-500/40">
-                        <i class="fa-solid fa-user-circle text-indigo-200 text-lg"></i>
-                        <span id="currentUserDisplay" class="text-xs sm:text-sm font-semibold text-white"></span>
-                        <button onclick="handleLogout()" class="ml-2 text-xs bg-rose-500 hover:bg-rose-600 text-white px-2.5 py-1 rounded-lg transition" title="ထွက်မည်">
+                    <!-- User Badge & Logout -->
+                    <div class="flex items-center gap-1.5 bg-indigo-700/90 px-2.5 py-1 rounded-lg sm:rounded-xl border border-indigo-500/40 shrink-0">
+                        <i class="fa-solid fa-user-circle text-indigo-200 text-sm"></i>
+                        <span id="currentUserDisplay" class="text-xs font-semibold text-white max-w-[95px] sm:max-w-none truncate"></span>
+                        <button onclick="handleLogout()" class="ml-1 text-xs bg-rose-500 hover:bg-rose-600 active:scale-95 text-white px-2 py-0.5 rounded-md transition" title="ထွက်မည်">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </div>
+                </div>
 
-                    <!-- Header Totals -->
-                    <div class="flex items-center gap-2">
-                        <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                            <span class="text-[10px] text-indigo-200 block">ယနေ့သုံးငွေ</span>
-                            <span id="headerTodaySpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
-                        </div>
-                        <div class="bg-indigo-700/80 px-3 py-1.5 rounded-xl border border-indigo-500/40 text-center">
-                            <span id="headerMonthLabel" class="text-[10px] text-indigo-200 block">နိုဝင်ဘာလသုံးငွေ</span>
-                            <span id="headerMonthSpent" class="text-xs sm:text-sm font-bold text-white">0 ကျပ်</span>
-                        </div>
+                <!-- Bottom Row: Summary Totals (2 Equal Columns on Mobile) -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-indigo-700/80 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 flex flex-col items-center justify-center">
+                        <span class="text-[10px] sm:text-xs text-indigo-200">ယနေ့သုံးငွေ</span>
+                        <span id="headerTodaySpent" class="text-xs sm:text-base font-bold text-white truncate">0 ကျပ်</span>
+                    </div>
+                    <div class="bg-indigo-700/80 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 flex flex-col items-center justify-center">
+                        <span id="headerMonthLabel" class="text-[10px] sm:text-xs text-indigo-200">လစဉ်သုံးငွေ</span>
+                        <span id="headerMonthSpent" class="text-xs sm:text-base font-bold text-white truncate">0 ကျပ်</span>
                     </div>
                 </div>
             </div>
         </header>
 
         <!-- Main Container -->
-        <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main class="max-w-7xl mx-auto px-2.5 sm:px-4 py-3 sm:py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 
             <!-- Left Column: Add / Edit Form -->
-            <section class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit sticky top-24">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                    <h2 id="formTitle" class="text-lg font-bold text-indigo-600 flex items-center gap-2">
+            <section class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 h-fit lg:sticky lg:top-28">
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                    <h2 id="formTitle" class="text-base sm:text-lg font-bold text-indigo-600 flex items-center gap-2">
                         <i class="fa-solid fa-circle-plus"></i> စရိတ်အသစ် ထည့်သွင်းရန်
                     </h2>
-                    <button id="cancelEditBtn" onclick="resetForm()" class="hidden text-xs text-rose-500 hover:text-rose-700 font-medium">
-                        <i class="fa-solid fa-xmark"></i> ပယ်ဖျက်ရန်
+                    <button id="cancelEditBtn" onclick="resetForm()" class="hidden text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1 rounded bg-rose-50">
+                        <i class="fa-solid fa-xmark"></i> ပယ်ဖျက်
                     </button>
                 </div>
 
-                <form id="expenseForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <form id="expenseForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
                     <input type="hidden" id="editKey" value="">
 
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">ရက်စွဲ (Date) <span class="text-rose-500">*</span></label>
-                        <input type="date" id="expDate" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                    <!-- Date & Category side-by-side on medium screens, stacked cleanly on narrow phones -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">ရက်စွဲ (Date) <span class="text-rose-500">*</span></label>
+                            <input type="date" id="expDate" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">အမျိုးအစား (Category) <span class="text-rose-500">*</span></label>
+                            <select id="expCategory" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+                                <option value="">အမျိုးအစား ရွေးချယ်ပါ</option>
+                                <option value="အစားအသောက်">🥗 အစားအသောက်</option>
+                                <option value="အိမ်လခ/မီတာ">🏠 အိမ်လခ / မီတာ / ရေ</option>
+                                <option value="သယ်ယူပို့ဆောင်ရေး">🚗 သယ်ယူပို့ဆောင်ရေး</option>
+                                <option value="ကျန်းမာရေး">💊 ကျန်းမာရေး</option>
+                                <option value="ပညာရေး">📚 ပညာရေး</option>
+                                <option value="အဝတ်အထည်">👕 အဝတ်အထည်</option>
+                                <option value="ဖျော်ဖြေရေး">🎉 ဖျော်ဖြေရေး & အထွေထွေ</option>
+                                <option value="အခြား">📦 အခြား</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">အမျိုးအစား (Category) <span class="text-rose-500">*</span></label>
-                        <select id="expCategory" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
-                            <option value="">အမျိုးအစား ရွေးချယ်ပါ</option>
-                            <option value="အစားအသောက်">🥗 အစားအသောက် (Food)</option>
-                            <option value="အိမ်လခ/မီတာ">🏠 အိမ်လခ / မီတာ / ရေ (Housing & Utilities)</option>
-                            <option value="သယ်ယူပို့ဆောင်ရေး">🚗 သယ်ယူပို့ဆောင်ရေး (Transport)</option>
-                            <option value="ကျန်းမာရေး">💊 ကျန်းမာရေး (Health)</option>
-                            <option value="ပညာရေး">📚 ပညာရေး (Education)</option>
-                            <option value="အဝတ်အထည်">👕 အဝတ်အထည် (Clothing)</option>
-                            <option value="ဖျော်ဖြေရေး">🎉 ဖျော်ဖြေရေး & အထွေထွေ (Entertainment & Misc)</option>
-                            <option value="အခြား">📦 အခြား (Other)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">ပမာဏ (Amount - MMK) <span class="text-rose-500">*</span></label>
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">ပမာဏ (Amount - MMK) <span class="text-rose-500">*</span></label>
                         <div class="relative">
-                            <input type="number" id="expAmount" min="1" placeholder="ဥပမာ - 15000" required class="w-full pl-3.5 pr-12 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+                            <input type="number" inputmode="numeric" id="expAmount" min="1" placeholder="ဥပမာ - 15000" required class="w-full pl-3 pr-11 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                             <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">ကျပ်</span>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">မှတ်ချက် / အကြောင်းအရာ (Note)</label>
-                        <textarea id="expNote" rows="2" placeholder="ဥပမာ - ဈေးဝယ်ထွက်သည်..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50"></textarea>
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">မှတ်ချက် / အကြောင်းအရာ (Note)</label>
+                        <input type="text" id="expNote" placeholder="ဥပမာ - ဈေးဝယ်ထွက်သည်..." class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50">
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center gap-2">
+                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl shadow-md transition duration-150 text-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> စာရင်းသိမ်းဆည်းမည်
                     </button>
                 </form>
             </section>
 
             <!-- Right Column: Dashboard & Tables -->
-            <section class="lg:col-span-2 space-y-6">
+            <section class="lg:col-span-2 space-y-4 sm:space-y-6">
 
                 <!-- Filter & Search Panel -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-filter text-indigo-600"></i> ရှာဖွေရန် & စစ်ထုတ်ရန် (Filter & Search)
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                    <div class="flex justify-between items-center gap-2">
+                        <h2 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-filter text-indigo-600"></i> ရှာဖွေရန် & စစ်ထုတ်ရန်
                         </h2>
                         <button onclick="resetFilters()" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-medium">
-                            စစ်ထုတ်မှုများ ဖယ်ရှားရန်
+                            အားလုံးပြန်ပြမည်
                         </button>
                     </div>
 
                     <!-- Tab Navigation for Views -->
-                    <div class="flex bg-slate-100 p-1 rounded-xl text-sm font-medium">
-                        <button onclick="switchView('all')" id="tab-all" class="flex-1 py-2 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold">အားလုံး</button>
-                        <button onclick="switchView('daily')" id="tab-daily" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နေ့စဉ်</button>
-                        <button onclick="switchView('monthly')" id="tab-monthly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">လစဉ်</button>
-                        <button onclick="switchView('yearly')" id="tab-yearly" class="flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နှစ်စဉ်</button>
+                    <div class="grid grid-cols-4 bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-medium gap-1">
+                        <button onclick="switchView('all')" id="tab-all" class="py-1.5 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold">အားလုံး</button>
+                        <button onclick="switchView('daily')" id="tab-daily" class="py-1.5 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နေ့စဉ်</button>
+                        <button onclick="switchView('monthly')" id="tab-monthly" class="py-1.5 text-center rounded-lg transition text-slate-600 hover:text-slate-900">လစဉ်</button>
+                        <button onclick="switchView('yearly')" id="tab-yearly" class="py-1.5 text-center rounded-lg transition text-slate-600 hover:text-slate-900">နှစ်စဉ်</button>
                     </div>
 
-                    <!-- Date Range Search Inputs & Search Button Section -->
-                    <div class="space-y-3 pt-2 border-t border-slate-100">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Date Range Search Inputs -->
+                    <div class="space-y-2.5 pt-2 border-t border-slate-100">
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">စတင်သည့်ရက် (From Date)</label>
-                                <input type="date" id="filterStartDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">စတင်ရက် (From)</label>
+                                <input type="date" id="filterStartDate" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">ပြီးဆုံးသည့်ရက် (To Date)</label>
-                                <input type="date" id="filterEndDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">ပြီးဆုံးရက် (To)</label>
+                                <input type="date" id="filterEndDate" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                             </div>
                         </div>
 
                         <!-- Dropdown selectors for specific month/year breakdown -->
-                        <div id="dynamicFilterControls" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div id="dynamicFilterControls" class="grid grid-cols-2 gap-2">
                             <div id="monthSelectorWrapper" class="hidden">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">လ ရွေးချယ်ရန် (Month)</label>
-                                <select id="filterMonth" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">လ ရွေးချယ်ရန်</label>
+                                <select id="filterMonth" onchange="renderApp()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                     <option value="">လ အားလုံး</option>
                                     <option value="01">January (ဇန်နဝါရီ)</option>
                                     <option value="02">February (ဖေဖော်ဝါရီ)</option>
@@ -200,8 +224,8 @@
                                 </select>
                             </div>
                             <div id="yearSelectorWrapper" class="hidden">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">နှစ် ရွေးချယ်ရန် (Year)</label>
-                                <select id="filterYear" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">နှစ် ရွေးချယ်ရန်</label>
+                                <select id="filterYear" onchange="renderApp()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                     <option value="">နှစ် အားလုံး</option>
                                 </select>
                             </div>
@@ -209,38 +233,37 @@
 
                         <!-- Action Buttons: Search & Reset -->
                         <div class="flex items-center gap-2 pt-1">
-                            <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm text-sm transition flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-magnifying-glass"></i> ရှာမည် (Search)
+                            <button onclick="applyFilters()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-2 px-3 rounded-xl shadow-sm text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-magnifying-glass"></i> ရှာမည်
                             </button>
-                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-1.5" title="စစ်ထုတ်မှု ဖယ်ရှားရန်">
+                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-700 font-semibold py-2 px-3 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1">
                                 <i class="fa-solid fa-rotate-right"></i> ပြန်စရန်
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Expense List & Table Container -->
+                <!-- Expense List Container (Optimized for All Phone Screens without Horizontal Scroll) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <!-- Table Header Actions -->
-                    <div class="p-4 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <!-- List Header Actions -->
+                    <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center gap-2">
                         <div class="flex items-center gap-2">
-                            <span id="recordCountBadge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold">0 ခု</span>
-                            <h3 class="font-bold text-slate-700 text-sm">အသုံးစရိတ် စာရင်းများ</h3>
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
+                            <h3 class="font-bold text-slate-700 text-xs sm:text-sm">အသုံးစရိတ် စာရင်းများ</h3>
+                            <span id="recordCountBadge" class="bg-indigo-100 text-indigo-700 text-[11px] px-2 py-0.5 rounded-full font-bold">0 ခု</span>
                         </div>
                         <!-- Bulk Delete Button -->
-                        <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-trash-can"></i> ရွေးချယ်ထားသမျှ ဖျက်မည် (<span id="selectedCount">0</span>)
+                        <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-rose-500 hover:bg-rose-600 text-white text-[11px] sm:text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> ဖျက်မည် (<span id="selectedCount">0</span>)
                         </button>
                     </div>
 
-                    <!-- Table -->
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View (Visible on Tablet/PC >= 768px) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
                                 <tr class="bg-slate-100/70 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
-                                    <th class="p-3.5 text-center w-10">
-                                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
-                                    </th>
+                                    <th class="p-3.5 text-center w-10">ရွေး</th>
                                     <th class="p-3.5">ရက်စွဲ</th>
                                     <th class="p-3.5">အသုံးပြုသူ</th>
                                     <th class="p-3.5">အမျိုးအစား</th>
@@ -250,24 +273,29 @@
                                 </tr>
                             </thead>
                             <tbody id="expenseTableBody" class="divide-y divide-slate-100">
-                                <!-- Populated dynamically via JS -->
+                                <!-- Populated via JS -->
                             </tbody>
                         </table>
                     </div>
 
+                    <!-- Mobile Fit-to-Screen Card List View (Visible on Phones < 768px - No horizontal scrolling!) -->
+                    <div id="expenseMobileList" class="md:hidden divide-y divide-slate-100">
+                        <!-- Populated via JS -->
+                    </div>
+
                     <!-- Empty State -->
-                    <div id="emptyState" class="hidden py-12 text-center">
-                        <div class="text-slate-300 text-4xl mb-2">
+                    <div id="emptyState" class="hidden py-10 text-center px-4">
+                        <div class="text-slate-300 text-3xl mb-2">
                             <i class="fa-solid fa-receipt"></i>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">မှတ်တမ်း မရှိသေးပါ</p>
-                        <p class="text-slate-400 text-xs mt-1">ဘယ်ဘက်မှ စာရင်းအသစ် စတင်ထည့်သွင်းပါ</p>
+                        <p class="text-slate-400 text-xs mt-1">အပေါ်ဘက်မှ စာရင်းအသစ် စတင်ထည့်သွင်းပါ</p>
                     </div>
 
-                    <!-- Table Footer Total -->
-                    <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-sm font-bold">
-                        <span class="text-slate-600">ရွေးချယ်ထားသော စာရင်းများ၏ စုစုပေါင်း:</span>
-                        <span id="filteredTotalAmount" class="text-indigo-600 text-lg">0 ကျပ်</span>
+                    <!-- Footer Total -->
+                    <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center font-bold">
+                        <span class="text-slate-600 text-xs sm:text-sm">စုစုပေါင်း သုံးငွေ:</span>
+                        <span id="filteredTotalAmount" class="text-indigo-600 text-base sm:text-lg">0 ကျပ်</span>
                     </div>
                 </div>
 
@@ -275,28 +303,28 @@
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
-            <p>အိမ်အသုံးစရိတ် စီမံခန့်ခွဲမှု ဝဘ်အက်ပလီကေးရှင်း &copy; 2026 | Firebase Realtime Database ဖြင့် ချိတ်ဆက်ထားသည်</p>
+        <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-[11px] text-slate-500 mt-auto">
+            <p>အိမ်အသုံးစရိတ် စီမံခန့်ခွဲမှု &copy; 2026 | Firebase Realtime Sync</p>
         </footer>
     </div>
 
     <!-- Custom Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100 transform transition-all scale-95 opacity-0" id="modalBox">
-            <div class="flex items-center gap-3">
-                <div id="modalIconContainer" class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl shrink-0">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4 border border-slate-100 transform transition-all scale-95 opacity-0" id="modalBox">
+            <div class="flex items-start gap-3">
+                <div id="modalIconContainer" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-lg shrink-0">
                     <i class="fa-solid fa-triangle-exclamation" id="modalIcon"></i>
                 </div>
                 <div>
-                    <h3 id="modalTitle" class="font-bold text-slate-800 text-lg">သတိပေးချက် (Confirmation)</h3>
-                    <p id="modalMessage" class="text-sm text-slate-600 mt-1">ဤစာရင်းကို ဖျက်ရန် သေချာပါသလား။</p>
+                    <h3 id="modalTitle" class="font-bold text-slate-800 text-base">သတိပေးချက်</h3>
+                    <p id="modalMessage" class="text-xs sm:text-sm text-slate-600 mt-1">ဤစာရင်းကို ဖျက်ရန် သေချာပါသလား။</p>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button onclick="closeModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition">
                     မလုပ်တော့ပါ
                 </button>
-                <button id="modalConfirmBtn" onclick="" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-md transition">
+                <button id="modalConfirmBtn" onclick="" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition">
                     သေချာသည် ဖျက်မည်
                 </button>
             </div>
@@ -304,9 +332,9 @@
     </div>
 
     <!-- Notification Toast Message Box -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-sm">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-        <span id="toastMessage">အောင်မြင်ပါသည်</span>
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 w-[90%] max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs sm:text-sm">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base shrink-0"></i>
+        <span id="toastMessage" class="leading-snug">အောင်မြင်ပါသည်</span>
     </div>
 
     <!-- JavaScript Application Logic with Firebase Modular SDK (v13+) -->
@@ -314,7 +342,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
         import { getDatabase, ref, push, set, remove, update, get } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
-        // Authorized Users Definition with Full Names & Shortcuts
         const VALID_USERS = [
             { fullName: "Thet Naing Oo", shortcut: "tno", password: "777734801" },
             { fullName: "Po Po Nyunt", shortcut: "ppn", password: "777734802" },
@@ -322,9 +349,8 @@
             { fullName: "Ye Htet Aung", shortcut: "yht", password: "777734846" }
         ];
 
-        let currentUser = null; // Currently logged in user object
+        let currentUser = null;
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCVXngEDoEYxWCxVfWeRLhfquYGJ8IPzok",
             authDomain: "thanthome-a17d2.firebaseapp.com",
@@ -334,12 +360,10 @@
             appId: "1:393653782341:web:da9771d320f2adaeb6202c"
         };
 
-        // Initialize Firebase & Realtime Database
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const expensesRef = ref(db, 'expenses');
 
-        // State Variables
         let expensesObj = {}; 
         let currentView = 'all'; 
         let pendingAction = null; 
@@ -393,7 +417,6 @@
             fetchExpensesData(); 
         }
 
-        // 🟢 ယနေ့ရက်စွဲကို ဒေသတွင်းစက်နာရီ (Local Date) အတိုင်း တိကျစွာ ရယူပေးမည့် function
         function getTodayLocalDateString() {
             const d = new Date();
             const year = d.getFullYear();
@@ -440,10 +463,10 @@
         function switchView(view) {
             currentView = view;
             document.querySelectorAll('[id^="tab-"]').forEach(btn => {
-                btn.className = "flex-1 py-2 text-center rounded-lg transition text-slate-600 hover:text-slate-900";
+                btn.className = "py-1.5 text-center rounded-lg transition text-slate-600 hover:text-slate-900";
             });
             const activeTab = document.getElementById(`tab-${view}`);
-            activeTab.className = "flex-1 py-2 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold";
+            activeTab.className = "py-1.5 text-center rounded-lg transition bg-white text-indigo-600 shadow-sm font-bold";
 
             const monthWrapper = document.getElementById('monthSelectorWrapper');
             const yearWrapper = document.getElementById('yearSelectorWrapper');
@@ -454,9 +477,6 @@
             } else if (view === 'yearly') {
                 monthWrapper.classList.add('hidden');
                 yearWrapper.classList.remove('hidden');
-            } else if (view === 'daily') {
-                monthWrapper.classList.add('hidden');
-                yearWrapper.classList.add('hidden');
             } else {
                 monthWrapper.classList.add('hidden');
                 yearWrapper.classList.add('hidden');
@@ -560,8 +580,9 @@
         }
 
         function confirmBulkDelete() {
-            const checkboxes = document.querySelectorAll('.expense-checkbox:checked');
-            const count = checkboxes.length;
+            const selectedKeys = new Set();
+            document.querySelectorAll('.expense-checkbox:checked').forEach(cb => selectedKeys.add(cb.dataset.key));
+            const count = selectedKeys.size;
             if (count === 0) return;
 
             openModal(
@@ -569,9 +590,8 @@
                 `ရွေးချယ်ထားသော စာရင်း အရေအတွက် (${count}) ခု ကို အပြီးတိုင် ဖျက်ရန် သေချာပါသလား။`,
                 "delete",
                 async () => {
-                    const keysToDelete = Array.from(checkboxes).map(cb => cb.dataset.key);
                     let updates = {};
-                    keysToDelete.forEach(key => {
+                    selectedKeys.forEach(key => {
                         updates[`expenses/${key}`] = null;
                     });
 
@@ -587,6 +607,13 @@
             );
         }
 
+        function syncCheckboxPair(key, isChecked) {
+            document.querySelectorAll(`.expense-checkbox[data-key="${key}"]`).forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateBulkDeleteButton();
+        }
+
         function toggleSelectAll(selectAll) {
             const checkboxes = document.querySelectorAll('.expense-checkbox');
             checkboxes.forEach(cb => cb.checked = selectAll.checked);
@@ -594,7 +621,10 @@
         }
 
         function updateBulkDeleteButton() {
-            const checkedCount = document.querySelectorAll('.expense-checkbox:checked').length;
+            const selectedKeys = new Set();
+            document.querySelectorAll('.expense-checkbox:checked').forEach(cb => selectedKeys.add(cb.dataset.key));
+            const checkedCount = selectedKeys.size;
+            
             const btn = document.getElementById('bulkDeleteBtn');
             document.getElementById('selectedCount').textContent = checkedCount;
             if (checkedCount > 0) {
@@ -633,7 +663,6 @@
                 ...expensesObj[key]
             }));
 
-            // 🟢 ယနေ့ရက်စွဲကို တိကျစွာ နှိုင်းယှဉ်ရန် Local String ဖြင့် ယူမည်
             const todayStr = getTodayLocalDateString();
             const todayTotal = expensesArray
                 .filter(e => e.date === todayStr)
@@ -660,33 +689,26 @@
 
             let filtered = [...expensesArray];
 
-            if (startDate) {
-                filtered = filtered.filter(e => e.date >= startDate);
-            }
-            if (endDate) {
-                filtered = filtered.filter(e => e.date <= endDate);
-            }
+            if (startDate) filtered = filtered.filter(e => e.date >= startDate);
+            if (endDate) filtered = filtered.filter(e => e.date <= endDate);
 
             if (currentView === 'daily') {
                 filtered = filtered.filter(e => e.date === todayStr);
             } else if (currentView === 'monthly') {
-                if (selectedMonth) {
-                    filtered = filtered.filter(e => e.date && e.date.split('-')[1] === selectedMonth);
-                }
-                if (selectedYear) {
-                    filtered = filtered.filter(e => e.date && e.date.split('-')[0] === selectedYear);
-                }
+                if (selectedMonth) filtered = filtered.filter(e => e.date && e.date.split('-')[1] === selectedMonth);
+                if (selectedYear) filtered = filtered.filter(e => e.date && e.date.split('-')[0] === selectedYear);
             } else if (currentView === 'yearly') {
-                if (selectedYear) {
-                    filtered = filtered.filter(e => e.date && e.date.split('-')[0] === selectedYear);
-                }
+                if (selectedYear) filtered = filtered.filter(e => e.date && e.date.split('-')[0] === selectedYear);
             }
 
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const tbody = document.getElementById('expenseTableBody');
+            const mobileList = document.getElementById('expenseMobileList');
             const emptyState = document.getElementById('emptyState');
+            
             tbody.innerHTML = '';
+            mobileList.innerHTML = '';
 
             let totalSpent = 0;
 
@@ -696,13 +718,15 @@
                 emptyState.classList.add('hidden');
                 filtered.forEach(item => {
                     totalSpent += item.amount;
+
+                    // 1. Desktop Table Row
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50/80 transition text-slate-700 border-b border-slate-100";
                     tr.innerHTML = `
                         <td class="p-3.5 text-center">
-                            <input type="checkbox" data-key="${item.firebaseKey}" onchange="updateBulkDeleteButton()" class="expense-checkbox rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
+                            <input type="checkbox" data-key="${item.firebaseKey}" onchange="syncCheckboxPair('${item.firebaseKey}', this.checked)" class="expense-checkbox rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
                         </td>
-                        <td class="p-3.5 font-medium text-xs sm:text-sm text-slate-600 whitespace-nowrap">${formatDateBurmese(item.date)}</td>
+                        <td class="p-3.5 font-medium text-sm text-slate-600 whitespace-nowrap">${formatDateBurmese(item.date)}</td>
                         <td class="p-3.5 whitespace-nowrap">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">
                                 <i class="fa-solid fa-user text-indigo-500 text-[10px]"></i> ${item.userName || 'အမည်မသိ'}
@@ -713,7 +737,7 @@
                                 ${item.category}
                             </span>
                         </td>
-                        <td class="p-3.5 text-slate-500 text-xs sm:text-sm max-w-xs truncate">${item.note || '-'}</td>
+                        <td class="p-3.5 text-slate-500 text-sm max-w-xs truncate">${item.note || '-'}</td>
                         <td class="p-3.5 text-right font-bold text-slate-800 whitespace-nowrap">${item.amount.toLocaleString()} ကျပ်</td>
                         <td class="p-3.5 text-center whitespace-nowrap">
                             <button onclick="editExpense('${item.firebaseKey}')" title="ပြင်ဆင်ရန်" class="p-1.5 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition mr-1">
@@ -725,11 +749,48 @@
                         </td>
                     `;
                     tbody.appendChild(tr);
+
+                    // 2. Mobile Fit-to-Screen Card Row (No horizontal scrolling)
+                    const card = document.createElement('div');
+                    card.className = "p-3 hover:bg-slate-50 transition flex items-start gap-2.5";
+                    card.innerHTML = `
+                        <div class="pt-1 shrink-0">
+                            <input type="checkbox" data-key="${item.firebaseKey}" onchange="syncCheckboxPair('${item.firebaseKey}', this.checked)" class="expense-checkbox rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer">
+                        </div>
+                        <div class="flex-1 min-w-0 space-y-1">
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 truncate">
+                                    ${item.category}
+                                </span>
+                                <span class="font-bold text-slate-800 text-sm whitespace-nowrap shrink-0">
+                                    ${item.amount.toLocaleString()} ကျပ်
+                                </span>
+                            </div>
+                            ${item.note ? `<p class="text-xs text-slate-600 break-words leading-relaxed">${item.note}</p>` : ''}
+                            <div class="flex justify-between items-center pt-1 text-[11px] text-slate-500">
+                                <div class="flex items-center gap-2 truncate">
+                                    <span>${formatDateShort(item.date)}</span>
+                                    <span>•</span>
+                                    <span class="font-medium text-slate-600 truncate"><i class="fa-solid fa-user text-indigo-400 text-[9px] mr-0.5"></i>${item.userName || 'အမည်မသိ'}</span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button onclick="editExpense('${item.firebaseKey}')" class="px-2 py-1 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-md transition">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="confirmDelete('${item.firebaseKey}')" class="px-2 py-1 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-md transition">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    mobileList.appendChild(card);
                 });
             }
 
             document.getElementById('filteredTotalAmount').textContent = totalSpent.toLocaleString() + ' ကျပ်';
             document.getElementById('recordCountBadge').textContent = filtered.length + ' ခု';
+            document.getElementById('selectAllCheckbox').checked = false;
             updateBulkDeleteButton();
         }
 
@@ -745,6 +806,13 @@
             return `${parts[2]} ရက်၊ ${months[parts[1]] || parts[1]}၊ ${parts[0]}`;
         }
 
+        function formatDateShort(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
         function openModal(title, message, type, callback) {
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalMessage').textContent = message;
@@ -754,14 +822,14 @@
             const confirmBtn = document.getElementById('modalConfirmBtn');
 
             if (type === 'delete') {
-                iconContainer.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl shrink-0";
+                iconContainer.className = "w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-lg shrink-0";
                 icon.className = "fa-solid fa-triangle-exclamation";
-                confirmBtn.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-md transition";
+                confirmBtn.className = "px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition";
                 confirmBtn.textContent = "သေချာသည် ဖျက်မည်";
             } else {
-                iconContainer.className = "w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xl shrink-0";
+                iconContainer.className = "w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-lg shrink-0";
                 icon.className = "fa-solid fa-circle-question";
-                confirmBtn.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold shadow-md transition";
+                confirmBtn.className = "px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition";
                 confirmBtn.textContent = "သေချာသည် သိမ်းမည်";
             }
 
@@ -799,17 +867,17 @@
 
             toastMessage.textContent = message;
             if (type === 'success') {
-                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-base shrink-0";
             } else {
-                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400 text-lg";
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400 text-base shrink-0";
             }
 
-            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.remove('translate-y-24', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
 
             setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.add('translate-y-24', 'opacity-0');
             }, 3000);
         }
 
@@ -820,6 +888,7 @@
         window.editExpense = editExpense;
         window.confirmDelete = confirmDelete;
         window.confirmBulkDelete = confirmBulkDelete;
+        window.syncCheckboxPair = syncCheckboxPair;
         window.toggleSelectAll = toggleSelectAll;
         window.updateBulkDeleteButton = updateBulkDeleteButton;
         window.resetFilters = resetFilters;
